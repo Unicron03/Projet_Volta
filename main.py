@@ -118,3 +118,28 @@ def lectension():
     tension = (lecture*3.3)/4095
     pyb.delay(100)
     return tension
+
+#15 speed min     
+def allSpeed(speed):
+    h1.forward(speed)
+    h2.forward(speed)
+    
+def vitesse():
+    if dist_obstacle() < 5:
+        speed = 0
+    elif dist_obstacle() < 15:
+        speed = 15
+    elif dist_obstacle() < 25:
+        speed = 20
+    elif dist_obstacle() < 40:
+        speed = 35
+    else:
+        speed = 50
+        
+    if 50 > x+5:
+        speed = 0
+    
+    return speed
+
+while True:
+    allSpeed(vitesse())
