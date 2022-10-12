@@ -118,6 +118,3 @@ def lectension():
     tension = (lecture*3.3)/4095
     pyb.delay(100)
     return tension
-
-
-        
