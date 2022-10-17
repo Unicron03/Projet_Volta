@@ -92,11 +92,12 @@ accel = pyb.Accel()
 x = accel.x()
 SENS = 3
 # led sur la carte
-myled = pyb.LED(1)
+led_lum = pyb.LED(1)
+led_montee = pyb.LED(2)
+led_descente = pyb.LED(3)
 xlights = (pyb.LED(3), pyb.LED(4))
 # servo direction
 sd = pyb.Servo(1)
-
 
 def dist_obstacle():
     trigger = pyb.Pin(pyb.Pin.board.Y5, mode=pyb.Pin.OUT, pull=None)
@@ -121,25 +122,93 @@ def lectension():
 
 #15 speed min     
 def allSpeed(speed):
-    h1.forward(speed)
-    h2.forward(speed)
-    
-def vitesse():
-    if dist_obstacle() < 5:
-        speed = 0
-    elif dist_obstacle() < 15:
-        speed = 15
-    elif dist_obstacle() < 25:
-        speed = 20
-    elif dist_obstacle() < 40:
-        speed = 35
+    if speed == 0:
+        forward = False
+        sd.angle(30)
     else:
-        speed = 50
+        forward = True
+        sd.angle(0)
         
-    if 50 > x+5:
-        speed = 0
+    if forward == True:
+        h1.forward(speed)
+        h2.forward(speed)
+    else:
+        h1.backward(speed)
+        h2.backward(speed)
+        
+def vitesse():
+    if accel.x() <= -1:
+        terrain = lst_terrain[0]
+        led_montee.off()
+        led_descente.on()
+        """descente"""
+        if dist_obstacle() < 10:
+            speed = 0
+        elif dist_obstacle() < 15:
+            speed = 1
+        elif dist_obstacle() < 25:
+            speed = 2
+        elif dist_obstacle() < 40:
+            speed = 4
+        else:
+            speed = 5
+            
+    elif accel.x() > 3:
+        terrain = lst_terrain[1]
+        led_descente.off()
+        led_montee.on()
+        """montee"""
+        if dist_obstacle() < 10:
+            speed = 0
+        elif dist_obstacle() < 15:
+            speed = 15
+        elif dist_obstacle() < 25:
+            speed = 20
+        elif dist_obstacle() < 40:
+            speed = 35
+        else:
+            speed = 50
+    else:
+        terrain = lst_terrain[2]
+        led_descente.off()
+        led_montee.off()
+        """plat"""
+        if dist_obstacle() < 5:
+            speed = 0
+        elif dist_obstacle() < 15:
+            speed = 15
+        elif dist_obstacle() < 25:
+            speed = 20
+        elif dist_obstacle() < 40:
+            speed = 35
+        else:
+            speed = 50
     
     return speed
 
+marche = True
+forward = True
+lst_terrain = ["descente", "montee", "plat"]
+sw = pyb.Switch()
+
 while True:
-    allSpeed(vitesse())
+    if lectension() < 1:
+        led_lum.on()
+    else:
+        led_lum.off()
+        
+    if sw():
+        marche = not marche
+        while sw():
+            pass
+    if marche:
+        print(forward)
+        if forward == True:
+            allSpeed(vitesse())
+        elif forward == False:
+            allSpeed(25)
+    else:
+        allSpeed(0)
+        
+allSpeed(0)
+    
