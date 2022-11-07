@@ -123,20 +123,23 @@ def lectension():
     return tension
 
 def autoRestart():
-    t = 5
-    checkDist = dist_obstacle()
-    print(checkDist)
+    """Fonction faisant repartir automatiquement la voiture ou non"""
+    t = 1
     while t:
         mins, secs = divmod(t, 60)
         timer = '{:02d}:{:02d}'.format(mins, secs)
+        time.sleep(0.5)
         t -= 1
     if t == 0:
-        if checkDist - 2.5 < dist_obstacle() < checkDist + 2.5:
-            backward()
-        else:
-            pass
+        t = 2
+        lst.append(dist_obstacle())
+        if len(lst) == 3:
+            if abs(lst[0]-lst[2]) <= 6:
+                backward()
+            lst.clear()
             
 def checkLight():
+    """Fonction allumant la led selon l'intensité du milieu"""
     if lectension() < 1:
         led_lum.on()
     else:
@@ -151,28 +154,31 @@ def forward(speed):
     return forward
            
 def backward():
+    """Fonction faisant reculer la voiture"""
     sd.angle(30)
     h1.backward(35)
     h2.backward(35)
-    t = 2
-    while t:
-        mins, secs = divmod(t, 60)
+    tBack = 2
+    while tBack:
+        mins, secs = divmod(tBack, 60)
         timer = '{:02d}:{:02d}'.format(mins, secs)
         time.sleep(1)
-        t -= 1
-    if t == 0:
+        tBack -= 1
+    if tBack == 0:
         sd.angle(30)
         h1.backward(35)
         h2.backward(35)
 
 def allSpeed(speed):
-    """Fonction appliquant la vitesse"""
+    """Fonction faisant avancer la voiture"""
     if forward(vitesse()):
-        sd.angle(0)
+        autoRestart()    
+        sd.angle(1)
         h1.forward(speed)
         h2.forward(speed)
     else:
         backward()
+        lst.clear()
 
 def vitesse():
     """Fonction renvoyant la vitesse selon le terrain"""
@@ -211,29 +217,24 @@ def vitesse():
         led_descente.off()
         led_montee.off()
         #plat
-        if dist_obstacle() < 15:
+        if dist_obstacle() < 25:
             speed = 0
-        elif dist_obstacle() < 25:
-            speed = 25
         elif dist_obstacle() < 35:
-            speed = 30
+            speed = 15
         elif dist_obstacle() < 45:
-            speed = 40
+            speed = 25
         else:
-            speed = 50
+            speed = 45
     #print(terrain)
-    #print(dist_obstacle(), speed)
     return speed
 
 marche = True
 lst_terrain = ["descente", "montee", "plat"]
+lst = []
 sw = pyb.Switch()
 
 while True:
-    """Boucle principale"""
-    #autoRestart()
-    checkLight()
-        
+    """Boucle principale"""        
     if sw():
         marche = not marche
         while sw():
@@ -243,5 +244,7 @@ while True:
         allSpeed(vitesse())
     else:
         allSpeed(0)
+
+    checkLight()
         
 #bug : - Détection du terrain défaillant (piste : fonctionnement du capteur accel.x()).
