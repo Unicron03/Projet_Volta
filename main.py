@@ -246,5 +246,3 @@ while True:
         allSpeed(0)
 
     checkLight()
-        
-#bug : - Détection du terrain défaillant (piste : fonctionnement du capteur accel.x()).
